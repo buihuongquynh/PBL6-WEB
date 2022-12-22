@@ -14,16 +14,50 @@ import {
 	Text,
 	Stack,
 	Flex,
+	Image,
 } from '@chakra-ui/react';
+import axios from 'axios';
 import { useRouter } from 'next/router';
+import { useEffect, useState } from 'react';
 
 export default function List() {
 	const router = useRouter();
+	const [list, setList] = useState<any>();
+	const getHistories = async () => {
+		try {
+			await axios
+				.get('http://dacndut.online/plant/predict_list/', {
+					headers: {
+						'Access-Control-Allow-Origin': '*',
+						'Content-Type': 'application/json',
+					},
+				})
+				.then(res => {
+					console.log(res);
+					setList(res?.data);
+				});
+		} catch (error) {
+			console.log(error);
+		}
+	};
 
+	const dateRender = date => {
+		const newDate = new Date(date);
+		return (
+			newDate.getFullYear() +
+			'-' +
+			(newDate.getMonth() + 1) +
+			'-' +
+			newDate.getDate()
+		);
+	};
+
+	useEffect(() => {
+		getHistories();
+	}, []);
 	return (
 		<Center py={6}>
 			<Box
-				maxW={'1000px'}
 				w={'full'}
 				margin={'50px'}
 				bg={useColorModeValue('white', 'gray.900')}
@@ -61,27 +95,30 @@ export default function List() {
 						<Table variant="simple">
 							<Thead>
 								<Tr>
-									<Th>Diagnostic results</Th>
-									<Th>Exact ratio</Th>
+									<Th>Tên tiếng Anh</Th>
+									<Th>Tên tiếng Việt</Th>
+									<Th>Ảnh</Th>
+
+									<Th>Mầm bệnh</Th>
+									<Th>Triệu chứng</Th>
+									<Th>Phương pháp điều trị bệnh</Th>
 									<Th>Create at</Th>
 								</Tr>
 							</Thead>
 							<Tbody>
-								<Tr>
-									<Td>inches</Td>
-									<Td>millimetres (mm)</Td>
-									<Td>25.4</Td>
-								</Tr>
-								<Tr>
-									<Td>feet</Td>
-									<Td>centimetres (cm)</Td>
-									<Td>30.48</Td>
-								</Tr>
-								<Tr>
-									<Td>yards</Td>
-									<Td>metres (m)</Td>
-									<Td>0.91444</Td>
-								</Tr>
+								{list?.map((item, index) => (
+									<Tr key={index}>
+										<Td>{item?.PredictResult?.NameDisease_ENG}</Td>
+										<Td>{item?.PredictResult?.NameDisease_VN} </Td>
+										<Td>
+											<Image w={200} src={item.Image} alt="icon" />
+										</Td>
+										<Td>{item?.PredictResult?.Pathogens}</Td>
+										<Td>{item?.PredictResult?.Symptom}</Td>
+										<Td>{item?.PredictResult?.Treatment}</Td>
+										<Td>{dateRender(item?.DateTime)}</Td>
+									</Tr>
+								))}
 							</Tbody>
 						</Table>
 					</TableContainer>

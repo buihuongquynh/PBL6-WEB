@@ -13,14 +13,50 @@ import Head from 'next/head';
 import { useRouter } from 'next/router';
 import React, { useState } from 'react';
 import ImageUploading from 'react-images-uploading';
+import axios from 'axios';
 
 export default function Home() {
 	const router = useRouter();
 	const [images, setImages] = useState([]);
+	const [result, setResult] = useState<any>();
+	const [isLoading, setIsLoading] = useState<boolean>(false);
 	const maxNumber = 69;
 
 	const onChange = imageList => {
 		setImages(imageList);
+	};
+
+	const dateRender = date => {
+		const newDate = new Date(date);
+		return (
+			newDate.getFullYear() +
+			'-' +
+			(newDate.getMonth() + 1) +
+			'-' +
+			newDate.getDate()
+		);
+	};
+
+	const handleDiagnose = async () => {
+		const formdata = new FormData();
+		formdata.append('_method', 'Post');
+		formdata.append('link', images[0]?.file);
+		setIsLoading(true);
+		try {
+			await axios
+				.post('http://dacndut.online/plant/ai/', formdata, {
+					headers: {
+						'Access-control-allow-origin': '*',
+						'Content-type': 'application/json; charset=UTF-8',
+					},
+				})
+				.then(res => {
+					setResult(res?.data);
+					setIsLoading(false);
+				});
+		} catch (error) {
+			console.log(error);
+		}
 	};
 
 	return (
@@ -56,7 +92,7 @@ export default function Home() {
 								fontSize={32}
 								fontWeight={700}
 							>
-								chẩn đoán bệnh cây trồng
+								Chẩn đoán bệnh cây trồng
 							</Text>
 							<HamburgerIcon
 								onClick={() => router.push('list')}
@@ -129,6 +165,8 @@ export default function Home() {
 										marginTop={5}
 										colorScheme="teal"
 										width={'100%'}
+										onClick={handleDiagnose}
+										isLoading={isLoading}
 									>
 										Chẩn đoán
 									</Button>
@@ -141,10 +179,30 @@ export default function Home() {
 									>
 										Kết quả chẩn đoán:
 									</Text>
-									<Text textAlign={'center'}>Tỉ lệ chính xác:</Text>
-									<Button marginTop={5} colorScheme="teal" width={'100%'}>
-										Xem chi tiết
-									</Button>
+									<Text fontSize="lg" textAlign={'center'}>
+										Tên bệnh tiếng anh: {result?.PredictResult?.NameDisease_ENG}
+									</Text>
+									<Text fontSize="lg" textAlign={'center'}>
+										Tên bệnh tiếng việt: {result?.PredictResult?.NameDisease_VN}
+									</Text>
+									<Text fontSize="lg" textAlign={'center'}>
+										Tỉ lệ chính xác:{' '}
+										{result?.Confident && (result?.Confident * 100).toFixed(2)}%
+									</Text>
+									<Text fontSize="lg" textAlign={'center'}>
+										Mầm bệnh : {result?.PredictResult?.Pathogens}
+									</Text>
+									<Text fontSize="lg" textAlign={'center'}>
+										Triệu chứng : {result?.PredictResult?.Symptom}
+									</Text>
+									<Text fontSize="lg" textAlign={'center'}>
+										Phương pháp điều trị bệnh :{' '}
+										{result?.PredictResult?.Treatment}
+									</Text>
+									<Text fontSize="lg" textAlign={'center'}>
+										Create at :{' '}
+										{result?.DateTime && dateRender(result?.DateTime)}
+									</Text>
 								</div>
 							)}
 						</ImageUploading>
