@@ -33,12 +33,9 @@ export default function List() {
 					},
 				})
 				.then(res => {
-					console.log(res);
 					setList(res?.data);
 				});
-		} catch (error) {
-			console.log(error);
-		}
+		} catch (error) {}
 	};
 
 	const dateRender = date => {

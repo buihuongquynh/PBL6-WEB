@@ -9,11 +9,11 @@ import {
 	Stack,
 	Flex,
 } from '@chakra-ui/react';
+import axios from 'axios';
 import Head from 'next/head';
 import { useRouter } from 'next/router';
 import React, { useState } from 'react';
 import ImageUploading from 'react-images-uploading';
-import axios from 'axios';
 
 export default function Home() {
 	const router = useRouter();
@@ -54,9 +54,7 @@ export default function Home() {
 					setResult(res?.data);
 					setIsLoading(false);
 				});
-		} catch (error) {
-			console.log(error);
-		}
+		} catch (error) {}
 	};
 
 	return (
